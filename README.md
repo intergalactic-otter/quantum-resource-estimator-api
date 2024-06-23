@@ -1,2 +1,2 @@
-# interdimensional-cruiser
+# interdimensional
 API to run estimations using different quantum resource estimators.
