@@ -1,0 +1,12 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools", "setuptools-rust"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "interdimensional"
+version = "0.1"
+
+[tool.setuptools.packages]
+# Pure Python packages/modules
+find = { where = ["python"] }
