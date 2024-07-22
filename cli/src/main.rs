@@ -7,12 +7,14 @@ use std::sync::Arc;
 use clap::Parser;
 use qsc_frontend::compile::{PackageStore, SourceContents, SourceName};
 use miette::{Context, IntoDiagnostic};
+use qsc::{interpret, PackageType};
 use qsc::packages::BuildableProgram;
 use qsc::target::Profile;
-use qsc::target::TargetCapabilityFlags;
+use qsc_data_structures::target::TargetCapabilityFlags;
 use qsc_wasm::project_system::{into_qsc_args_x, IProjectConfig};
 use qsc_wasm::project_system::ProgramConfig;
 use qsc_project::{PackageGraphSources, Project};
+use resource_estimator::estimate_entry;
 
 #[derive(Parser)]
 struct Cli {
@@ -61,8 +63,9 @@ pub fn project_to_qsc_args(
     let pkg_graph: PackageGraphSources = package_graph_sources.into();
     let pkg_graph: qsc_project::PackageGraphSources = pkg_graph.into();
 
-    // this function call builds all dependencies as a part of preparing the package store
-    // for building the user code.
+    /**
+        This function call builds all dependencies as a part of preparing the package store for building the user code.
+    **/
     let buildable_program = BuildableProgram::new(capabilities, pkg_graph);
 
     if !buildable_program.dependency_errors.is_empty() {
@@ -103,7 +106,7 @@ fn main() {
             .map(read_source)
             .collect::<miette::Result<Vec<_>>>().unwrap();
 
-    let mut store = PackageStore::new(qsc::compile::core());
+    let store = PackageStore::new(qsc::compile::core());
 
     let single_source_ptr = sources.get(0).unwrap();
     let single_source = single_source_ptr.clone();
@@ -117,5 +120,28 @@ fn main() {
     println!("Loaded file to memory.");
 
     let qsc_args = project_to_qsc_args(project_config.package_graph_sources, None);
-    println!("qsc_args {:?}", qsc_args);
+
+    let  (source_map, capabilities, language_features, store, deps) = qsc_args.unwrap();
+
+    let mut interpreter = interpret::Interpreter::new(
+        source_map,
+        PackageType::Exe,
+        capabilities,
+        language_features,
+        store,
+        &deps[..],
+    )
+        .unwrap();
+
+let result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + surface_code", "detail": "Majorana qubit with 1e-6 error rate (surface code QEC)", "params": { "qubitParams": { "name": "qubit_maj_ns_e6" }, "qecScheme": { "name": "surface_code" } } }]"#)    .map_err(|e| match &e[0] {
+        resource_estimator::Error::Interpreter(interpret::Error::Eval(e)) => e.to_string(),
+        resource_estimator::Error::Interpreter(_) => unreachable!("interpreter errors should be eval errors"),
+        resource_estimator::Error::Estimation(e) => e.to_string(),
+    });
+
+    match result {
+        Ok(estimate) => println!("Estimation result: {}", estimate),
+        Err(error) => eprintln!("Error: {}", error),
+    }
+
 }

@@ -10,5 +10,5 @@ qsc = { path = "../qsharp/compiler/qsc" }
 qsc_frontend = { path = "../qsharp/compiler/qsc_frontend" }
 qsc_wasm = { path = "../qsharp/wasm/"}
 qsc_project = { path = "../qsharp/compiler/qsc_project"}
-qsc_structs = { path = "../qsharp/compiler/qsc_data_structures"}
+qsc_data_structures = { path = "../qsharp/compiler/qsc_data_structures"}
 miette = { version = "7.2.0", features = ["fancy"] }
