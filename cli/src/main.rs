@@ -106,8 +106,6 @@ fn main() {
             .map(read_source)
             .collect::<miette::Result<Vec<_>>>().unwrap();
 
-    let store = PackageStore::new(qsc::compile::core());
-
     let single_source_ptr = sources.get(0).unwrap();
     let single_source = single_source_ptr.clone();
     let single_source_content = single_source.1;
@@ -133,7 +131,7 @@ fn main() {
     )
         .unwrap();
 
-let result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + surface_code", "detail": "Majorana qubit with 1e-6 error rate (surface code QEC)", "params": { "qubitParams": { "name": "qubit_maj_ns_e6" }, "qecScheme": { "name": "surface_code" } } }]"#)    .map_err(|e| match &e[0] {
+    let result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + surface_code", "detail": "Majorana qubit with 1e-6 error rate (surface code QEC)", "params": { "qubitParams": { "name": "qubit_maj_ns_e6" }, "qecScheme": { "name": "surface_code" } } }]"#)    .map_err(|e| match &e[0] {
         resource_estimator::Error::Interpreter(interpret::Error::Eval(e)) => e.to_string(),
         resource_estimator::Error::Interpreter(_) => unreachable!("interpreter errors should be eval errors"),
         resource_estimator::Error::Estimation(e) => e.to_string(),
@@ -143,5 +141,4 @@ let result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + 
         Ok(estimate) => println!("Estimation result: {}", estimate),
         Err(error) => eprintln!("Error: {}", error),
     }
-
 }
