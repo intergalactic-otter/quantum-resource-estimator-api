@@ -85,21 +85,17 @@ pub fn project_to_qsc_args(
 }
 
 pub fn estimate(file_path: impl AsRef<Path>) -> Result<String> {
-    // Read the source file
     let (source_name, source_contents) = read_source(file_path)?;
 
-    // Create a project from the single file
     let project_config = Project::from_single_file(
         Arc::from(source_name.as_ref()),
         source_contents
     );
 
-    // Convert project to QSC arguments
     let (source_map, capabilities, language_features, store, deps) =
         project_to_qsc_args(project_config.package_graph_sources, None)
             .map_err(|e| miette::Error::msg(format!("QSC argument conversion error: {:?}", e)))?;
 
-    // Create an interpreter
     let mut interpreter = interpret::Interpreter::new(
         source_map,
         PackageType::Exe,
@@ -109,7 +105,6 @@ pub fn estimate(file_path: impl AsRef<Path>) -> Result<String> {
         &deps[..],
     ).map_err(|e| miette::Error::msg(format!("Interpreter creation error: {:?}", e)))?;
 
-    // Perform the estimation
     let estimation_result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + surface_code", "detail": "Majorana qubit with 1e-6 error rate (surface code QEC)", "params": { "qubitParams": { "name": "qubit_maj_ns_e6" }, "qecScheme": { "name": "surface_code" } } }]"#)
         .map_err(|e| match &e[0] {
             resource_estimator::Error::Interpreter(interpret::Error::Eval(e)) => miette::Error::msg(e.to_string()),
