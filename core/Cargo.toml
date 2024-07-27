@@ -1,0 +1,14 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+miette = { version = "7.2.0", features = ["fancy"] }
+clap = { version = "4.0", features = ["derive"] }
+resource_estimator = { path = "../qsharp/resource_estimator" }
+qsc = { path = "../qsharp/compiler/qsc" }
+qsc_frontend = { path = "../qsharp/compiler/qsc_frontend" }
+qsc_wasm = { path = "../qsharp/wasm/"}
+qsc_project = { path = "../qsharp/compiler/qsc_project"}
+qsc_data_structures = { path = "../qsharp/compiler/qsc_data_structures"}

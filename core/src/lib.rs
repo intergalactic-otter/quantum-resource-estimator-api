@@ -4,7 +4,6 @@ use std::io::{
 };
 use std::path::Path;
 use std::sync::Arc;
-use clap::Parser;
 use qsc_frontend::compile::{SourceContents, SourceName};
 use miette::{Context, IntoDiagnostic};
 use qsc::{interpret, PackageType};
@@ -12,11 +11,8 @@ use qsc::packages::BuildableProgram;
 use qsc::target::Profile;
 use qsc_project::{PackageGraphSources, Project};
 use resource_estimator::estimate_entry;
+use miette::Result;
 
-#[derive(Parser)]
-struct Cli {
-    path: std::path::PathBuf,
-}
 
 fn read_source(path: impl AsRef<Path>) -> miette::Result<(SourceName, SourceContents)> {
     let path = path.as_ref();
@@ -88,36 +84,22 @@ pub fn project_to_qsc_args(
     ))
 }
 
+pub fn estimate(file_path: impl AsRef<Path>) -> Result<String> {
+    // Read the source file
+    let (source_name, source_contents) = read_source(file_path)?;
 
-fn main() {
-    let args = Cli::parse();
-    println!("Reading path from: {:?}", args.path);
-
-    let path = args.path;
-
-    let paths = vec![
-        path,
-    ];
-
-    let sources = paths.iter()
-            .map(read_source)
-            .collect::<miette::Result<Vec<_>>>().unwrap();
-
-    let single_source_ptr = sources.get(0).unwrap();
-    let single_source = single_source_ptr.clone();
-    let single_source_content = single_source.1;
-
+    // Create a project from the single file
     let project_config = Project::from_single_file(
-        Arc::from("single_file"),
-        single_source_content
+        Arc::from(source_name.as_ref()),
+        source_contents
     );
 
-    println!("Loaded file to memory.");
+    // Convert project to QSC arguments
+    let (source_map, capabilities, language_features, store, deps) =
+        project_to_qsc_args(project_config.package_graph_sources, None)
+            .map_err(|e| miette::Error::msg(format!("QSC argument conversion error: {:?}", e)))?;
 
-    let qsc_args = project_to_qsc_args(project_config.package_graph_sources, None);
-
-    let  (source_map, capabilities, language_features, store, deps) = qsc_args.unwrap();
-
+    // Create an interpreter
     let mut interpreter = interpret::Interpreter::new(
         source_map,
         PackageType::Exe,
@@ -125,17 +107,16 @@ fn main() {
         language_features,
         store,
         &deps[..],
-    )
-        .unwrap();
+    ).map_err(|e| miette::Error::msg(format!("Interpreter creation error: {:?}", e)))?;
 
-    let result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + surface_code", "detail": "Majorana qubit with 1e-6 error rate (surface code QEC)", "params": { "qubitParams": { "name": "qubit_maj_ns_e6" }, "qecScheme": { "name": "surface_code" } } }]"#)    .map_err(|e| match &e[0] {
-        resource_estimator::Error::Interpreter(interpret::Error::Eval(e)) => e.to_string(),
-        resource_estimator::Error::Interpreter(_) => unreachable!("interpreter errors should be eval errors"),
-        resource_estimator::Error::Estimation(e) => e.to_string(),
-    });
+    // Perform the estimation
+    let estimation_result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + surface_code", "detail": "Majorana qubit with 1e-6 error rate (surface code QEC)", "params": { "qubitParams": { "name": "qubit_maj_ns_e6" }, "qecScheme": { "name": "surface_code" } } }]"#)
+        .map_err(|e| match &e[0] {
+            resource_estimator::Error::Interpreter(interpret::Error::Eval(e)) => miette::Error::msg(e.to_string()),
+            resource_estimator::Error::Interpreter(_) => miette::Error::msg("Unexpected interpreter error"),
+            resource_estimator::Error::Estimation(e) => miette::Error::msg(e.to_string()),
+        })?;
 
-    match result {
-        Ok(estimate) => println!("Estimation result: {}", estimate),
-        Err(error) => eprintln!("Error: {}", error),
-    }
+    Ok(estimation_result)
 }
+
