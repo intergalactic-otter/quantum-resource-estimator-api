@@ -13,7 +13,6 @@ use qsc_project::{PackageGraphSources, Project};
 use resource_estimator::estimate_entry;
 use miette::Result;
 
-
 fn read_source(path: impl AsRef<Path>) -> miette::Result<(SourceName, SourceContents)> {
     let path = path.as_ref();
     if path.as_os_str() == "-" {
@@ -110,7 +109,7 @@ pub fn estimate(file_path: impl AsRef<Path>) -> Result<String> {
             resource_estimator::Error::Interpreter(interpret::Error::Eval(e)) => miette::Error::msg(e.to_string()),
             resource_estimator::Error::Interpreter(_) => miette::Error::msg("Unexpected interpreter error"),
             resource_estimator::Error::Estimation(e) => miette::Error::msg(e.to_string()),
-        })?;
+    })?;
 
     Ok(estimation_result)
 }

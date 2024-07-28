@@ -6,7 +6,6 @@ use core::estimate;
 #[derive(Parser)]
 struct Cli {
     /// Path to the Q# file to estimate
-    #[clap(parse(from_os_str))]
     path: PathBuf,
 }
 

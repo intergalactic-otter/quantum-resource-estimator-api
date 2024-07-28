@@ -6,6 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+actix-cors = "0.7.0"
 actix-web = "4"
+juniper = "0.16.1"
 pyo3 = "0.22.2"
 
