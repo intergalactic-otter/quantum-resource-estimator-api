@@ -1,8 +1,9 @@
 use juniper::{EmptySubscription, FieldResult, RootNode};
-use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
+use juniper::{GraphQLInputObject, GraphQLObject};
 
 #[derive(GraphQLObject)]
 struct EstimationResult {
+    file: String,
     status: String,
     job_params: JobParams,
     physical_counts: PhysicalCounts,
@@ -153,6 +154,7 @@ pub struct Query;
 impl Query {
     fn estimation_result() -> FieldResult<EstimationResult> {
         Ok(EstimationResult {
+            file: "www.google.com".to_string(),
             status: "Success".to_string(),
             job_params: JobParams {
                 qec_scheme: QecScheme {
@@ -262,6 +264,7 @@ impl Query {
 #[derive(GraphQLInputObject)]
 #[graphql(description = "Input data for estimation")]
 struct EstimationInput {
+    file: String,
     label: String,
     detail: String,
     params: ParamsInput,
@@ -292,6 +295,7 @@ pub struct Mutation;
 impl Mutation {
     fn create_estimation(estimation: EstimationInput) -> FieldResult<EstimationResult> {
         Ok(EstimationResult {
+            file: "www.google.com".to_string(),
             status: "Success".to_string(),
             job_params: JobParams {
                 qec_scheme: QecScheme {

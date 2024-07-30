@@ -1,0 +1,17 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+qcore = { path = "../core" }  # Assuming `core` is the library crate
+actix-cors = "0.7.0"
+actix-web = "4"
+juniper = "0.16.1"
+pyo3 = "0.22.2"
+miette = { workspace = true }
+clap = { workspace = true }
+
+[[bin]]
+name = "interdimensional"  # Name of the binary
+path = "main.rs"  # Path to the main Rust file

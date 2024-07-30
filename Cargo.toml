@@ -1,13 +1,21 @@
-[package]
-name = "interdimensional"
+[workspace.package]
+authors = ["Photonic"]
+homepage = "https://github.com/photonic-labs/quantum-resource-estimator-api"
+repository = "https://github.com/microsoft/quantum-resource-estimator-api"
+edition = "2024"
+license = "MIT"
 version = "0.1.0"
-edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [
+    "core",
+    "cli",
+    "src"
+]
+exclude = [
+    "qsharp"
+]
 
-[dependencies]
-actix-cors = "0.7.0"
-actix-web = "4"
-juniper = "0.16.1"
-pyo3 = "0.22.2"
-
+[workspace.dependencies]
+clap = { version = "4.0", features = ["derive"] }
+miette = { version = "7.2.0", features = ["fancy"] }

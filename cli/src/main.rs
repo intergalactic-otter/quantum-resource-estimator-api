@@ -1,7 +1,7 @@
 use clap::Parser;
 use miette::Result;
 use std::path::PathBuf;
-use core::estimate;
+use qcore::estimate;
 
 #[derive(Parser)]
 struct Cli {

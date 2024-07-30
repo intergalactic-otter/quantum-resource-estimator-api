@@ -1,4 +1,3 @@
-mod azure;
 mod schema;
 
 use actix_web::{get, post, middleware, web, App, HttpResponse, HttpServer, Responder, route};
@@ -7,7 +6,6 @@ use std::{sync::Arc};
 use actix_cors::Cors;
 use actix_web::web::Data;
 use crate::schema::{create_schema, Schema};
-
 
 #[get("/")]
 async fn hello() -> impl Responder {

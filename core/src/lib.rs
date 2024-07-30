@@ -12,6 +12,47 @@ use qsc::target::Profile;
 use qsc_project::{PackageGraphSources, Project};
 use resource_estimator::estimate_entry;
 use miette::Result;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct EstimationConfig {
+    label: String,
+    detail: String,
+    params: Params,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Params {
+    #[serde(rename = "qubitParams")]
+    qubit_params: QubitParams,
+    #[serde(rename = "qecScheme")]
+    qec_scheme: QecScheme,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct QubitParams {
+    name: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct QecScheme {
+    name: String,
+}
+
+pub fn default_estimation_config() -> EstimationConfig {
+    EstimationConfig {
+        label: "qubit_maj_ns_e6 + surface_code".to_string(),
+        detail: "Majorana qubit with 1e-6 error rate (surface code QEC)".to_string(),
+        params: Params {
+            qubit_params: QubitParams {
+                name: "qubit_maj_ns_e6".to_string(),
+            },
+            qec_scheme: QecScheme {
+                name: "surface_code".to_string(),
+            },
+        },
+    }
+}
 
 fn read_source(path: impl AsRef<Path>) -> miette::Result<(SourceName, SourceContents)> {
     let path = path.as_ref();
@@ -104,7 +145,8 @@ pub fn estimate(file_path: impl AsRef<Path>) -> Result<String> {
         &deps[..],
     ).map_err(|e| miette::Error::msg(format!("Interpreter creation error: {:?}", e)))?;
 
-    let estimation_result = estimate_entry(&mut interpreter, r#"[{ "label": "qubit_maj_ns_e6 + surface_code", "detail": "Majorana qubit with 1e-6 error rate (surface code QEC)", "params": { "qubitParams": { "name": "qubit_maj_ns_e6" }, "qecScheme": { "name": "surface_code" } } }]"#)
+    let input_json =  serde_json::to_string(&default_estimation_config()).unwrap();
+    let estimation_result = estimate_entry(&mut interpreter, &input_json)
         .map_err(|e| match &e[0] {
             resource_estimator::Error::Interpreter(interpret::Error::Eval(e)) => miette::Error::msg(e.to_string()),
             resource_estimator::Error::Interpreter(_) => miette::Error::msg("Unexpected interpreter error"),
@@ -114,3 +156,10 @@ pub fn estimate(file_path: impl AsRef<Path>) -> Result<String> {
     Ok(estimation_result)
 }
 
+pub async fn fetch_qs_file(file_url: &str) -> String {
+    let target = "https://www.rust-lang.org/logos/rust-logo-512x512.png";
+    let response = reqwest::get(target).await;
+    let content = response.unwrap().text().await;
+    println!("content {:?}", content);
+    content.unwrap().to_string()
+}
