@@ -1,4 +1,4 @@
-**How can we accelerate quantum resource estimation learning and development? Introducing the first public GraphQL API for quantum resource estimation. A software engineering approach to quantum resource estimation.**  
+**How can we accelerate quantum resource estimation learning and development? Exploring API integration for quantum resource estimation.**  
 Y. V. Bermudez  
 Universidad ORT Uruguay
 
