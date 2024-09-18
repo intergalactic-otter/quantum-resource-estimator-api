@@ -1,5 +1,5 @@
 **How can we accelerate quantum resource estimation learning and development? Exploring API integration for quantum resource estimation.**  
-Y. V. Bermudez  
+Vicente Bermúdez  
 Universidad ORT Uruguay
 
 **Introduction**  
